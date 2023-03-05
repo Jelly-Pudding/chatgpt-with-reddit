@@ -3,6 +3,7 @@ import praw
 import openai
 import random
 import time
+import re
 
 # Get environment variables
 openai.api_key = os.getenv("chatgpt_api_key")
@@ -14,10 +15,17 @@ password = os.environ['password']
 reddit = praw.Reddit(client_id=client_id, client_secret=client_secret,
                      user_agent='<myBot>', username=username, password=password)
 
+def found_url(comment):
+    url_regex = r'\b(https?://|www\.)[^\s/$.?#].[^\s]*\b'
+    if re.match(url_regex, comment):
+        print("\nFound a url in the comment!\n")
+        return True
+    return False
+
 def get_new_comment():
     try:
         for comment in reddit.subreddit('all').stream.comments(skip_existing=True):
-            if 30 <= len(comment.body) <= 300:
+            if 30 <= len(comment.body) <= 300 and not found_url(comment.body):
                 if comment.parent_id.startswith('t3_'):
                     # top-level comment, no parent comment
                     print(f"\nThis is a top-level comment: {comment.body}\n")
@@ -28,7 +36,7 @@ def get_new_comment():
                         comment.parent_id.split('_')[1])
                     # Check if the parent comment itself is a top-level comment.
                     if parent_comment.parent_id.startswith('t3_'):
-                        if 30 <= len(parent_comment.body) <= 100:
+                        if 30 <= len(parent_comment.body) <= 100 and not found_url(parent_comment.body):
                             print(
                                 "\nThe comment has a parent. Comment: {comment.body}. Parent: {parent_comment.body}\n")
                             return [comment, parent_comment]
@@ -53,7 +61,7 @@ which responds to the parent comment and it is also the comment you must respond
                 {"role": "user",
                     "content": prompt}
             ],
-            temperature=round(random.uniform(0, 1.4), 1),
+            temperature=1,
             n=1,
             max_tokens=4000
         )
@@ -76,7 +84,7 @@ while True:
         else:
             print("\nbad comment detected! :(\n")
     else:
-        print("\nError getting new comment, sleeping for a bit...\n")
+        print("\nError getting new comment...\n")
     print("sleeping...")
     time.sleep(1000)
     print("done sleeping...")
