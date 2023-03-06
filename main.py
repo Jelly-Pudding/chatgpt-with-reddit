@@ -52,11 +52,11 @@ def get_chatgpt_reply(comment_lst):
     try:
         if comment_lst[1] == None:
             prompt = f"You have to reply as a reddit user. You can pretend to be happy, sad, sarcastic, or anything else really. Do not respond as ChatGPT. \
-Do not make it obvious that you are not human. This is the title of the post: {comment_lst[2]}. This is the reddit comment you must respond to: \"{comment_lst[0].body}\""
+Do not make it obvious that you are not human. This is the title of the post: {comment_lst[2]}. This is the reddit comment you must respond to: {comment_lst[0].body}"
         else:
             prompt = f"You have to reply as a reddit user. You can pretend to be happy, sad, sarcastic, or anything else really. Do not respond as ChatGPT. \
-Do not make it obvious that you are not human. This is the title of the post: {comment_lst[2]}. This is the top-level reddit comment: \"{comment_lst[1].body}\". This is the comment \
-responding to the top-level comment and it is also the comment you must respond to in turn: \"{comment_lst[0].body}\""
+Do not make it obvious that you are not human. This is the title of the post: {comment_lst[2]}. This is the top-level reddit comment: {comment_lst[1].body}. This is the comment \
+responding to the top-level comment and it is also the comment you must respond to in turn: {comment_lst[0].body}"
         print(f"\n{prompt}\n")
 
         if fails_moderation(prompt):
