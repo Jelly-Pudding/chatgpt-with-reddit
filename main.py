@@ -54,7 +54,7 @@ Do not make it obvious that you are not human. This is the reddit comment you mu
         else:
             prompt = f"You have to reply as a reddit user. Do not respond as ChatGPT. \
 Do not make it obvious that you are not human. This is the top-level reddit comment: \"{comment_lst[1].body}\". This is the comment \
-which responds to the parent comment and it is also the comment you must respond to: \"{comment_lst[0].body}\""
+which responds to the top-level comment and it is also the comment you must respond to: \"{comment_lst[0].body}\""
         print(prompt)
         completion = openai.ChatCompletion.create(
             model="gpt-3.5-turbo-0301",
