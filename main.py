@@ -41,7 +41,7 @@ def get_new_comment():
                     if parent_comment.parent_id.startswith('t3_'):
                         if 30 <= len(parent_comment.body) <= 100 and not found_url(parent_comment.body):
                             print(
-                                "\nThe comment has a parent. Comment: {comment.body}. Parent: {parent_comment.body}\n")
+                                f"\nThe comment has a parent. Comment: {comment.body}. Parent: {parent_comment.body}\n")
                             return [comment, parent_comment, submission_title]
     except Exception as e:
         print(f"Error: ", e)
