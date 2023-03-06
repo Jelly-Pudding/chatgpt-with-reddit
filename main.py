@@ -4,6 +4,7 @@ import openai
 import random
 import time
 import re
+from keep_alive import keep_alive
 
 # Get environment variables
 openai.api_key = os.getenv("chatgpt_api_key")
@@ -62,8 +63,7 @@ which responds to the parent comment and it is also the comment you must respond
                     "content": prompt}
             ],
             temperature=1,
-            n=1,
-            max_tokens=4000
+            n=1
         )
         print("\nreply " + completion.choices[0].message.content + "\n")
         return completion.choices[0].message.content
@@ -75,16 +75,23 @@ which responds to the parent comment and it is also the comment you must respond
 def is_good_reply(reply):
     return not any(keyword in reply for keyword in ["policies", "violates", "unable to provide", "as a reddit user"])
 
+keep_alive()
+
 while True:
-    comment_lst = get_new_comment()
-    if comment_lst[0] is not None:
-        chatgpt_reply = get_chatgpt_reply(comment_lst)
-        if chatgpt_reply is not None and is_good_reply(chatgpt_reply.lower()):
-            comment_lst[0].reply(chatgpt_reply)
+    try:
+        comment_lst = get_new_comment()
+        if comment_lst[0] is not None:
+            chatgpt_reply = get_chatgpt_reply(comment_lst)
+            if chatgpt_reply is not None and is_good_reply(chatgpt_reply.lower()):
+                comment_lst[0].reply(chatgpt_reply)
+            else:
+                print("\nbad comment detected! :(\n")
         else:
-            print("\nbad comment detected! :(\n")
-    else:
-        print("\nError getting new comment...\n")
-    print("sleeping...")
-    time.sleep(1000)
-    print("done sleeping...")
+            print("\nError getting new comment...\n")
+        print("sleeping...")
+        time.sleep(1000)
+        print("done sleeping...")
+    except Exception as e:
+        print("Error replying: ", e)
+        print("going... to sleep...")
+        time.sleep(1000)
