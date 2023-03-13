@@ -26,7 +26,9 @@ def found_url(comment):
 def get_new_comment():
     # Returns the comment, the parent comment, and the title
     try:
-        for comment in reddit.subreddit('worldnews+politics+stupidpol+AmItheAsshole+thesopranos').stream.comments(skip_existing=True):
+        for comment in reddit.subreddit('worldnews+politics+stupidpol+thesopranos').stream.comments(skip_existing=True):
+            if comment.submission.is_self:
+                continue # Skip text-based posts
             if 30 <= len(comment.body) <= 300 and not found_url(comment.body):
                 submission_title = comment.submission.title
                 if comment.parent_id.startswith('t3_'):
