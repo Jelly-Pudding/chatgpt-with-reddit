@@ -26,7 +26,7 @@ def found_url(comment):
 def get_new_comment():
     # Returns the comment, the parent comment, and the title
     try:
-        for comment in reddit.subreddit('all').stream.comments(skip_existing=True):
+        for comment in reddit.subreddit('worldnews+politics+stupidpol+AmItheAsshole+thesopranos').stream.comments(skip_existing=True):
             if 30 <= len(comment.body) <= 300 and not found_url(comment.body):
                 submission_title = comment.submission.title
                 if comment.parent_id.startswith('t3_'):
@@ -41,7 +41,7 @@ def get_new_comment():
                     if parent_comment.parent_id.startswith('t3_'):
                         if 30 <= len(parent_comment.body) <= 100 and not found_url(parent_comment.body):
                             print(
-                                f"\nThe comment has a parent. Comment: {comment.body}. Parent: {parent_comment.body}\n")
+                                "\nThe comment has a parent. Comment: {comment.body}. Parent: {parent_comment.body}\n")
                             return [comment, parent_comment, submission_title]
     except Exception as e:
         print(f"Error: ", e)
@@ -51,14 +51,16 @@ def get_chatgpt_reply(comment_lst):
     # i.e. there is no parent comment
     try:
         if comment_lst[1] == None:
-            prompt = f"You have to reply as a reddit user. You can pretend to be happy, sad, sarcastic, or anything else really. Do not respond as ChatGPT. \
-Do not make it obvious that you are not human. This is the title of the post: {comment_lst[2]}. This is the reddit comment you must respond to: {comment_lst[0].body}"
+            prompt = f"You have to reply as a sarcastic redditor. Do not respond as ChatGPT. \
+Try to appear human. This is the title of the post: '{comment_lst[2]}'. You did not create this post. You are someone \
+making a new comment and this is the reddit comment you must respond to (but remember the comment you are responding to responds to the post, not you): '{comment_lst[0].body}'"
         else:
-            prompt = f"You have to reply as a reddit user. You can pretend to be happy, sad, sarcastic, or anything else really. Do not respond as ChatGPT. \
-Do not make it obvious that you are not human. This is the title of the post: {comment_lst[2]}. This is the top-level reddit comment: {comment_lst[1].body}. This is the comment \
-responding to the top-level comment and it is also the comment you must respond to in turn: {comment_lst[0].body}"
-        print(f"\n{prompt}\n")
+            prompt = f"You have to reply as a reddit user. Be as sarcastic as possible. Do not respond as ChatGPT. \
+Try to appear human. This is the title of the post: '{comment_lst[2]}'. This is the top-level reddit comment: '{comment_lst[1].body}'. You neither \
+created the post nor the top-level comment. You must respond as a new commenter to this comment someone made which replied to the top-level comment (remember you are new to the conversation): \
+'{comment_lst[0].body}'"
 
+        print(f"\n{prompt}\n")
         if fails_moderation(prompt):
             print("\nThe prompt triggers one of ChatGPT's many stupid policies\n")
             return None
@@ -79,29 +81,34 @@ responding to the top-level comment and it is also the comment you must respond 
         return None
 
 def is_good_reply(reply):
-    return not any(keyword in reply for keyword in ["as a reddit user", "as an ai", "as a fellow redditor", "as a fellow Reddit user"])
+    return not any(keyword in reply for keyword in ["as a reddit user", "as an ai", "as a fellow redditor", "as a fellow reddit user"])
+
+def remove_potential_quotation_marks(s):
+    if s and s[0] in ['\'', '"'] and s[-1] in ['\'', '"'] and len(s) > 1:
+        s = s[1:-1]
+    return s
 
 def fails_moderation(input_message):
     moderation_resp = openai.Moderation.create(input=input_message)
     return moderation_resp['results'][0]['flagged']
 
 keep_alive()
-
 while True:
     try:
         comment_lst = get_new_comment()
         if comment_lst[0] is not None:
             chatgpt_reply = get_chatgpt_reply(comment_lst)
             if chatgpt_reply is not None and is_good_reply(chatgpt_reply.lower()):
-                comment_lst[0].reply(chatgpt_reply)
+                cleaned_reply = remove_potential_quotation_marks(chatgpt_reply)
+                comment_lst[0].reply(cleaned_reply)
             else:
                 print("\nFailed moderation policies or the reply made was bad! :(\n")
         else:
             print("\nError getting new comment...\n")
         print("sleeping...")
-        time.sleep(1000)
+        time.sleep(12600)
         print("done sleeping...")
     except Exception as e:
         print("Error replying: ", e)
         print("going... to sleep...")
-        time.sleep(1000)
+        time.sleep(12600)
